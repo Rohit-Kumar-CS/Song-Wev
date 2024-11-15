@@ -184,7 +184,7 @@ async function displayAlbums() {
 
 // Main function to initialize the playlist
 async function main() {
-    await getSongs("/songs/Rock");
+    await getSongs("songs/Rock");
     await displayAlbums()
     const playm = document.getElementById("playm");
 
