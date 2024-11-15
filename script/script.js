@@ -141,7 +141,7 @@ const playPrevious = () => {
 
 
 async function displayAlbums() {
-    let response = await fetch(`/songs/`);
+    let response = await fetch(`songs/`);
     let htmlText = await response.text();
     let div = document.createElement("div");
     div.innerHTML = htmlText;
