@@ -4,7 +4,7 @@ let songs = [];
 let currfolder;
 
 async function getSongs(folder) {
-    try {
+   
         currfolder = folder;
         let response = await fetch(`/${folder}/`);
         let htmlText = await response.text();
@@ -50,10 +50,6 @@ async function getSongs(folder) {
             });
         });
         return songs
-
-    } catch (error) {
-        console.error("Error fetching songs:", error);
-    }
 }
 
 // Function to load and play a song at a specific index
@@ -141,7 +137,7 @@ const playPrevious = () => {
 
 
 async function displayAlbums() {
-    let response = await fetch(`/songs/`);
+    let response = await fetch("./songs/");
     let htmlText = await response.text();
     let div = document.createElement("div");
     div.innerHTML = htmlText;
