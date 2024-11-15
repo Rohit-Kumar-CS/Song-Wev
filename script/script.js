@@ -31,7 +31,7 @@ async function getSongs(folder) {
 
             listItem.innerHTML = `
             <div class="info">
-                <div>${decodeURIComponent(song.split("songs/")[1])}</div>
+                <div>${decodeURIComponent(song.split("/songs/")[1])}</div>
                 <div>default</div>
             </div>
             <div class="playnow">
@@ -45,7 +45,7 @@ async function getSongs(folder) {
         Array.from(songUL.getElementsByTagName("li")).forEach(element => {
             element.addEventListener("click", () => {
                 const songName = element.querySelector(".info div").textContent.trim();
-                const index = songs.findIndex(s => decodeURIComponent(s.split("songs/")[1]) === songName);
+                const index = songs.findIndex(s => decodeURIComponent(s.split("/songs/")[1]) === songName);
                 playMusic(index);
             });
         });
@@ -141,7 +141,7 @@ const playPrevious = () => {
 
 
 async function displayAlbums() {
-    let response = await fetch(`songs/`);
+    let response = await fetch(`/songs/`);
     let htmlText = await response.text();
     let div = document.createElement("div");
     div.innerHTML = htmlText;
@@ -150,9 +150,9 @@ async function displayAlbums() {
     let array = Array.from(anchors)
     for (let index = 0; index < array.length; index++) {
         const e = array[index];
-        if (e.href.includes("songs")) {
+        if (e.href.includes("/songs/")) {
             let folder = e.href.split("/").slice(-2)[0];
-            let response = await fetch(`songs/${folder}/info.json`);
+            let response = await fetch(`/songs/${folder}/info.json`);
             let htmlText = await response.json();
             cardContainer.innerHTML = cardContainer.innerHTML + `<div  data-folder="${folder}" class="card">
                         <div class="play">
@@ -165,7 +165,7 @@ async function displayAlbums() {
                             </svg>
                         </div>
                         <img aria-hidden="false" draggable="false" loading="lazy"
-                            src="songs/${folder}/img.jpg"
+                            src="/songs/${folder}/img.jpg"
                             data-testid="shortcut-image" alt=""
                             class="mMx2LUixlnN_Fu45JpFB WWDxafTPs4AgThdcX5jN Yn2Ei5QZn19gria6LjZj">
                         <h2>${htmlText.title} </h2>
@@ -184,7 +184,7 @@ async function displayAlbums() {
 
 // Main function to initialize the playlist
 async function main() {
-    await getSongs("songs/Rock");
+    await getSongs("/songs/Rock");
     await displayAlbums()
     const playm = document.getElementById("playm");
 
