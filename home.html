@@ -111,7 +111,23 @@
         </div>
     </div> 
     <script src="script/script.js"></script>
+    <script>
+        // Check if the page is refreshed
+        window.addEventListener("load", function () {
+            const isReloaded = sessionStorage.getItem("reloaded");
 
+            if (!isReloaded) {
+                // Mark that the page was reloaded
+                sessionStorage.setItem("reloaded", "true");
+
+                // Redirect to the loading page
+                window.location.href = "loading.html";
+            } else {
+                // Clear the reloaded flag to allow for further refreshes
+                sessionStorage.removeItem("reloaded");
+            }
+        });
+    </script>
 </body>
 
 </html>
