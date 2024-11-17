@@ -6,11 +6,13 @@ let currfolder;
 async function getSongs(folder) {
     try {
         currfolder = folder;
+        console.log('Fetching songs from:', folder);
         const response = await fetch(`/${folder}/`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const htmlText = await response.text();
+        console.log('Received HTML:', htmlText.substring(0, 100)); // Log first 100 chars
 
         const div = document.createElement("div");
         div.innerHTML = htmlText;
@@ -42,7 +44,7 @@ async function getSongs(folder) {
             if (!listItem) return;
 
             const songName = listItem.querySelector(".info div").textContent.trim();
-            const index = songs.findIndex(s => 
+            const index = songs.findIndex(s =>
                 decodeURIComponent(s.split("/songs/")[1]) === songName
             );
             if (index !== -1) {
@@ -53,6 +55,7 @@ async function getSongs(folder) {
         return songs;
     } catch (error) {
         console.error("Error fetching songs:", error);
+        console.log("Folder attempted:", folder);
         return [];
     }
 }
@@ -108,75 +111,115 @@ const playPrevious = () => {
 
 
 async function displayAlbums() {
-    let response = await fetch("./songs/");
-    let htmlText = await response.text();
-    let div = document.createElement("div");
-    div.innerHTML = htmlText;
-    let anchors = div.getElementsByTagName("a")
-    let cardContainer = document.querySelector(".cardContainer")
-    let array = Array.from(anchors)
-    for (let index = 0; index < array.length; index++) {
-        const e = array[index];
-        if (e.href.includes("/songs/")) {
-            let folder = e.href.split("/").slice(-2)[0];
-            let response = await fetch(`/songs/${folder}/info.json`);
-            let htmlText = await response.json();
-            cardContainer.innerHTML = cardContainer.innerHTML + `<div  data-folder="${folder}" class="card">
-                        <div class="play">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                                <!-- Green Circle Background -->
-                                <circle cx="12" cy="12" r="10" fill="#28A745" />
+    try {
 
-                                <!-- Centered Play Icon Path -->
-                                <path d="M10 8L16 12L10 16V8Z" fill="#00000" />
-                            </svg>
-                        </div>
-                        <img aria-hidden="false" draggable="false" loading="lazy"
-                            src="/songs/${folder}/img.jpg"
-                            data-testid="shortcut-image" alt=""
-                            class="mMx2LUixlnN_Fu45JpFB WWDxafTPs4AgThdcX5jN Yn2Ei5QZn19gria6LjZj">
-                        <h2>${htmlText.title} </h2>
-                        <p>${htmlText.description}</p>
-                    </div>`
-
+        let response = await fetch("./songs/");
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    }
-    Array.from(document.getElementsByClassName("card")).forEach(e => {
-        e.addEventListener("click", async item => {
-            songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`)
-        })
-    })
-    Array.from(document.getElementsByClassName("card")).forEach(e => {
-        e.addEventListener("click", async item => {
-            try {
-                // Get the songs for the clicked folder
-                songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`);
-                
-                // Check if there are any songs in the folder
-                if (songs && songs.length > 0) {
-                    // Play the first song (index 0)
-                    playMusic(0);
-                    
-                    // Update play button state
-                    const playButton = document.getElementById("playm");
-                    if (playButton) {
-                        playButton.src = "icon/pause.svg";
+        let htmlText = await response.text();
+        let div = document.createElement("div");
+        div.innerHTML = htmlText;
+        let anchors = div.getElementsByTagName("a")
+        let cardContainer = document.querySelector(".cardContainer")
+
+        if (!cardContainer) {
+            console.error("Card container not found");
+            return;
+        }
+
+        let array = Array.from(anchors)
+        for (let index = 0; index < array.length; index++) {
+            const e = array[index];
+            if (e.href.includes("/songs/")) {
+                try {
+
+                    let folder = e.href.split("/").slice(-2)[0];
+                    let infoResponse = await fetch(`./songs/${folder}/info.json`);
+                    if (!infoResponse.ok) {
+                        console.error(`Error loading info.json for ${folder}`);
+                        continue;
                     }
+                    let htmlText = await infoResponse.json();
+                    cardContainer.innerHTML  += `<div  data-folder="${folder}" class="card">
+                    <div class="play">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                    <!-- Green Circle Background -->
+                    <circle cx="12" cy="12" r="10" fill="#28A745" />
                     
-                    // Optional: Update the UI to show which card is currently playing
-                    document.querySelectorAll('.card').forEach(card => {
-                        card.classList.remove('playing');
-                    });
-                    item.currentTarget.classList.add('playing');
-                } else {
-                    console.log("No songs found in this folder");
+                    <!-- Centered Play Icon Path -->
+                    <path d="M10 8L16 12L10 16V8Z" fill="#00000" />
+                    </svg>
+                    </div>
+                    <img aria-hidden="false" draggable="false" loading="lazy"
+                    src="/songs/${folder}/img.jpg"
+                    data-testid="shortcut-image" alt=""
+                    class="mMx2LUixlnN_Fu45JpFB WWDxafTPs4AgThdcX5jN Yn2Ei5QZn19gria6LjZj">
+                    <h2>${htmlText.title} </h2>
+                    <p>${htmlText.description}</p>
+                    </div>`
                 }
-            } catch (error) {
-                console.error("Error playing song from card:", error);
+                catch (error) {
+                    console.error(`Error processing folder ${folder}:`, error);
+                }
+
             }
+        }
+
+
+        Array.from(document.getElementsByClassName("card")).forEach(e => {
+            e.addEventListener("click", async item => {
+                songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`)
+            })
+        })
+        Array.from(document.getElementsByClassName("card")).forEach(e => {
+            e.addEventListener("click", async item => {
+                try {
+                    // Get the songs for the clicked folder
+                    songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`);
+
+                    // Check if there are any songs in the folder
+                    if (songs && songs.length > 0) {
+                        // Play the first song (index 0)
+                        playMusic(0);
+
+                        // Update play button state
+                        const playButton = document.getElementById("playm");
+                        if (playButton) {
+                            playButton.src = "icon/pause.svg";
+                        }
+
+                        // Optional: Update the UI to show which card is currently playing
+                        document.querySelectorAll('.card').forEach(card => {
+                            card.classList.remove('playing');
+                        });
+                        item.currentTarget.classList.add('playing');
+                    } else {
+                        console.log("No songs found in this folder");
+                    }
+                } catch (error) {
+                    console.error("Error playing song from card:", error);
+                }
+            });
         });
-    });
-    
+
+        // Add click handlers after all cards are created
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', async () => {
+                try {
+                    const folder = card.dataset.folder;
+                    songs = await getSongs(`songs/${folder}`);
+                    if (songs.length > 0) {
+                        playMusic(0);
+                    }
+                } catch (error) {
+                    console.error('Error handling card click:', error);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error in displayAlbums:", error);
+    }
 
 }
 
@@ -238,6 +281,17 @@ async function main() {
             }
         });
 
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await displayAlbums();
+                // Initialize with default folder
+                await getSongs('songs/Rock');
+            } catch (error) {
+                console.error('Error initializing app:', error);
+            }
+        });
+        
+
         // Next and Previous controls
         document.getElementById("next").addEventListener("click", playNext);
         document.getElementById("previous").addEventListener("click", playPrevious);
@@ -258,25 +312,25 @@ function setupAudioEndedHandler() {
                 if (playButton) {
                     playButton.src = "icon/play1.svg";
                 }
-                
+
                 // Reset song info
                 const songInfoElement = document.querySelector(".songinfo");
                 if (songInfoElement) {
                     songInfoElement.textContent = "Select a song to play";
                 }
-                
+
                 // Reset time display
                 const songTimeElement = document.querySelector(".songtime");
                 if (songTimeElement) {
                     songTimeElement.textContent = "00:00 / 00:00";
                 }
-                
+
                 // Reset progress bar
                 const circle = document.querySelector(".circle");
                 if (circle) {
                     circle.style.left = "0%";
                 }
-                
+
                 // Optional: Reset seekbar
                 const seekbar = document.querySelector(".seekbar");
                 if (seekbar) {
@@ -287,7 +341,7 @@ function setupAudioEndedHandler() {
                         const seekbarWidth = seekbar.offsetWidth;
                         const clickPosition = e.offsetX;
                         const newTime = (clickPosition / seekbarWidth) * currentSong.duration;
-                
+
                         if (!isNaN(newTime)) {
                             currentSong.currentTime = newTime; // Only set if newTime is valid
                         }
