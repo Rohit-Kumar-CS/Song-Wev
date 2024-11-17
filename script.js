@@ -1,4 +1,4 @@
-let currentSong = new Audio();
+let currentSong = new Audio;
 let currentIndex = 0;
 let songs = [];
 let currfolder;
@@ -232,7 +232,7 @@ async function main() {
         const volumeControl = document.querySelector(".range input");
         const volumeImg = document.querySelector(".volumeimg");
 
-        await getSongs("songs/Rock");
+        await getSongs(".songs");
         await displayAlbums();
 
         // Play/Pause functionality
