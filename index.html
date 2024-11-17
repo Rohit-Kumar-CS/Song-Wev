@@ -200,12 +200,21 @@
             fog.style.backgroundPosition = `${x}% ${y}%`;
         });
 
+        // Simulate loading completion after 3 seconds
+        setTimeout(() => {
+            document.getElementById('gunshot-effect').classList.add('gunshot');
+            setTimeout(() => {
+                document.getElementById('loading-icon').classList.add('zoom-in');
+                setTimeout(() => {
+                    document.getElementById('loading-container').style.display = 'none';
+                }, 1000); // Hide all content after zoom-in animation completes
+            }, 200); // Delay zoom effect to follow gunshot effect
+        }, 3000);
+
         // Redirect to the home page after showing the loading page
         setTimeout(function () {
             window.location.href = "home.html"; // Redirect to home page
         }, 4000); // 3 seconds
-
-        
     </script>
 </body>
 
