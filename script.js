@@ -1,4 +1,4 @@
-let currentSong = new Audio;
+let currentSong = new Audio();
 let currentIndex = 0;
 let songs = [];
 let currfolder;
