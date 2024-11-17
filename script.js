@@ -46,7 +46,7 @@ async function getSongs(folder) {
             element.addEventListener("click", () => {
                 const songName = element.querySelector(".info div").textContent.trim();
                 const index = songs.findIndex(s => decodeURIComponent(s.split("/songs/")[1]) === songName);
-                playMusic(index);
+                playMusic(index)[0];
             });
         });
         return songs
@@ -180,7 +180,7 @@ async function displayAlbums() {
 
 // Main function to initialize the playlist
 async function main() {
-    await getSongs("songs/Rock");
+    await getSongs(".songs/Rock");
     await displayAlbums()
     const playm = document.getElementById("playm");
 
